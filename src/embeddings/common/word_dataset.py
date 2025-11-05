@@ -2,8 +2,10 @@
 from torch.utils.data import Dataset
 import torch
 
-# create a class for a dataset
 class WordDataset(Dataset):
+  """
+  Class of word datasets
+  """
   def __init__(self, text, word2idx, context_length=8, stride=4):
 
     # initialize

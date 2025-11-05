@@ -1,7 +1,5 @@
 # typical libraries...
 import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib as mpl
 
 # for importing and working with texts
 import requests
@@ -10,17 +8,17 @@ import string
 
 from torch import Tensor
 # pytorch stuff
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import DataLoader
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
 from torchinfo import summary
 
 import matplotlib_inline.backend_inline
 
-from src.common.embedding_model import EmbeddingModel
-from src.common.word_dataset import WordDataset
+from src.embeddings.common.embedding_model import EmbeddingModel
+from src.embeddings.common import train_the_model
+from src.embeddings.common.word_dataset import WordDataset
 
 matplotlib_inline.backend_inline.set_matplotlib_formats('svg')
 
@@ -124,7 +122,7 @@ print('Targets in words (first batch):')
 print([idx2word[item.item()] for item in y[0]])
 
 # ///////////////////////////////////////////////////////////////////////////////
-# Code below is for video "Build a model to learn the embeddings
+# Code below is for video "Build a model to learn the embeddings"
 # ///////////////////////////////////////////////////////////////////////////////
 
 # exploring dimensionality based on vocab sizes
@@ -237,3 +235,47 @@ for _ in range(context_length):
 
 # summary of model and parameters
 summary(model, input_data=X, col_names=['input_size','output_size','num_params'])
+
+# ///////////////////////////////////////////////////////////////////////////////
+# Code below is for video "Train and evaluate the model"
+# ///////////////////////////////////////////////////////////////////////////////
+
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+print(f'Using device: {device}')
+
+# create a fresh model instance
+model = EmbeddingModel(vocab_size=nVocab, embedding_dim=embeddingDimension, context_size=context_length)
+
+# with Xavier weight distribution
+for param in model.parameters():
+  if param.dim()>1: nn.init.xavier_normal_(param)
+
+
+# and move it to the GPU
+model = model.to(device)
+
+# create the loss and optimizer functions
+loss_function = nn.NLLLoss().to(device)
+optimizer = torch.optim.AdamW(model.parameters(), lr=.001, weight_decay=.01)
+
+# quick test for errors and sanity-check the output matrix sizes
+X,y = next(iter(dataloader))
+X,y = X.to(device), y.to(device)
+
+# forward pass
+modelOutput = model(X)
+
+# check the sizes
+print(f'Model input is of size: {X.shape}')
+print(f'Target output is of size: {y.shape}')
+print(f'Model output is of size: {modelOutput.shape}')
+
+# loss function
+loss = loss_function(modelOutput,y[:,-1])
+
+# extract a copy of the pretrained embedding weights for comparison later
+pretrained_embeddings = model.embeddings.weight.detach().cpu().clone()
+
+model,total_loss = train_the_model(model, device, dataloader, optimizer, loss_function, num_epochs=10)
+
+postrained_embeddings = model.embeddings.weight.detach().cpu().clone()
