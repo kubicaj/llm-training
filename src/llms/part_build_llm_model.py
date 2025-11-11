@@ -48,7 +48,7 @@ print(f'Variable "tmTokens" is type {type(tmTokens)} and has {len(tmTokens)}')
 # ///////////////////////////////////////////////////////////////////////////////
 
 # new instance of the model
-llm_model = LLMModel(n_vocab, embed_dim)
+llm_model = LLMModel(n_vocab, embed_dim, 8)
 
 token_dataset = TokenDataset(tmTokens,seq_len,stride)
 

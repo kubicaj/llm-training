@@ -38,7 +38,8 @@ class EmbeddingModel(nn.Module):
         embeds = self.embeddings(inputs).view(inputs.shape[0], -1)
 
         # fully connected layers
-        out = F.relu(self.linear1(embeds))
+        linear1_out = self.linear1(embeds)
+        out = F.relu(linear1_out)
         out = self.linear2(out)
 
         # log softmax for classification (note: NLLLoss expects logprobs as inputs)
