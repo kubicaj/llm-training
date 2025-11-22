@@ -2,7 +2,7 @@ import torch
 from torchinfo import summary
 
 from src.llms.transformer.multi_head_attention.multi_head_attention_model import MultiHeadAttentionLanguageModel
-# use GPU if available
+# use GPU if available (cuda available only with Nvidia)
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 print("Device = ", device)
 
