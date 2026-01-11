@@ -1,4 +1,97 @@
-# llm-training
+# lora-quote-model (LoRA fine-tuning example)
+
+This README describes the LoRA fine-tuning example provided in this repository. It documents the small educational example that fine-tunes LoRA adapters (via PEFT) on a tiny quotes dataset using a small causal LM.
+
+Purpose
+
+- Educational/demo: show how to attach and train LoRA adapters on a pretrained causal LM (distilgpt2) using the Hugging Face Trainer + PEFT.
+- Not production-ready: toy dataset, minimal evaluation, and simplified training choices for clarity.
+
+What is included
+
+- `src/llms/trainings/pre_trained/lora/train.py` — the training script (dataset loading, tokenizer, model, LoRA config, Trainer).
+- `src/llms/trainings/pre_trained/lora/test_model.py` — a small script that loads the base model and the LoRA adapter and demonstrates generation before/after fine-tuning.
+- `lora-quote-model/` — example output directory where the fine-tuned adapter, tokenizer, and adapter config files are saved (adapter files like `adapter_model.safetensors` and `adapter_config.json`).
+
+Quick start (PowerShell)
+
+1. Create and activate a Python venv:
+
+```powershell
+python -m venv .venv; .\.venv\Scripts\Activate.ps1
+```
+
+2. Install core Python packages (adjust torch install for your platform/CUDA build):
+
+```powershell
+uv sync
+pip install transformers datasets peft accelerate
+# Then install torch separately (see Installation section below for Windows/CUDA notes)
+```
+
+3. Run training (after installing a compatible torch build):
+
+```powershell
+uv run python src/llms/trainings/pre_trained/lora/train.py
+```
+
+4. Run the test script to compare generation before/after applying the LoRA adapter:
+
+```powershell
+uv run python src/llms/trainings/pre_trained/lora/test_model.py
+```
+
+Quick start (WSL / Linux)
+
+1. Create and activate a Python venv (use python3 on most Linux systems):
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+2. Upgrade pip and install core packages:
+
+```bash
+uv sync
+pip install --upgrade pip
+pip install transformers datasets peft accelerate
+```
+
+3. Install a compatible PyTorch build for your system. Examples (pick the one matching your CUDA/tooling):
+
+- CPU-only (portable):
+
+```bash
+pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+```
+
+- CUDA (example using the nightly/cu124 index; adjust to your CUDA version or use the official stable index):
+
+```bash
+pip install --pre torch --index-url https://download.pytorch.org/whl/nightly/cu124
+pip install --pre torchvision --index-url https://download.pytorch.org/whl/nightly/cu124 --no-deps
+```
+
+4. Run training (from the repository root):
+
+```bash
+python src/llms/trainings/pre_trained/lora/train.py
+```
+
+5. Run the test script to compare generation before/after applying the LoRA adapter:
+
+```bash
+python src/llms/trainings/pre_trained/lora/test_model.py
+```
+
+Important notes
+
+- The example uses `distilgpt2` as the base model and trains *only* LoRA adapter parameters (the base model is left frozen). This keeps GPU memory usage low and demonstrates the adapter workflow.
+- The dataset used is small and intended for demonstration; results will be limited and training choices are simplified for clarity.
+- This code is for education and experimentation only. It is not hardened for production (no extensive validation, monitoring, or security hardening).
+
+---
 
 ## Installation on Win 11
 
@@ -17,9 +110,9 @@ If you are affected, you will see:
 
 ```python
 import torch
-torch.cuda.is_available()  # False
-torch.version.cuda         # None
-````
+print(torch.cuda.is_available())  # False
+print(torch.version.cuda)         # None
+```
 
 And often:
 
